@@ -21,6 +21,7 @@ describe("painel de ações da programação preventiva", () => {
     expect(html).toContain("Editar");
     expect(html).toContain("Histórico");
     expect(html).toContain("Cancelar");
+    expect(html).toContain("text-slate-900");
   });
 
   it("bloqueia Cancelar quando a preventiva está concluída", () => {

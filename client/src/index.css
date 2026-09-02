@@ -15,5 +15,7 @@ html { overscroll-behavior-y: none; }
 body { margin: 0; min-width: 320px; background: #f6f8fb; overscroll-behavior-y: none; touch-action: pan-y; }
 #root { min-height: 100vh; }
 button, input, textarea, select { font: inherit; }
+input, textarea, select { color: #0f172a; background-color: #ffffff; }
+input::placeholder, textarea::placeholder { color: #94a3b8; opacity: 1; }
 button { cursor: pointer; }
 h1, h2, h3, h4 { font-family: 'Space Grotesk', 'DM Sans', sans-serif; }

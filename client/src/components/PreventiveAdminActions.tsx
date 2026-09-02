@@ -35,7 +35,7 @@ export default function PreventiveAdminActions({ canManage, items, selectedId, o
           <p className="text-xs font-bold uppercase tracking-widest text-[#df6c18]">Ações do PCM</p>
           <p className="mt-1 text-sm text-slate-600">Selecione uma programação para editar, cancelar ou consultar as alterações.</p>
         </div>
-        <select aria-label="Programação para ações administrativas" className="h-10 w-full rounded-xl border border-orange-200 bg-white px-3 text-sm xl:max-w-md" value={selectedId ?? ""} onChange={(event) => onSelectedIdChange(event.target.value ? Number(event.target.value) : null)}>
+        <select aria-label="Programação para ações administrativas" className="h-10 w-full rounded-xl border border-orange-200 bg-white px-3 text-sm text-slate-900 xl:max-w-md" value={selectedId ?? ""} onChange={(event) => onSelectedIdChange(event.target.value ? Number(event.target.value) : null)}>
           <option value="">Selecione uma programação</option>
           {items.map((item) => <option key={item.id} value={item.id}>{item.task} · {formatDate(item.scheduledDate)}</option>)}
         </select>
