@@ -89,3 +89,14 @@
 - [x] Testar auditoria, permissões, edição e cancelamento sem apagar registros
 - [x] Testar fluxo real de edição e cancelamento mantendo a preventiva existente no banco
 - [x] Confirmar leitura real dos registros em pcm_preventive_audit_logs após edição e cancelamento
+- [x] Corrigir ações de editar, cancelar e histórico que não aparecem no mobile
+- [x] Garantir que o perfil PCM veja ações administrativas em qualquer largura de tela
+- [x] Validar o fluxo mobile com programação ativa e programação concluída
+- [x] Validar em navegador mobile autenticado, como PCM, o painel Ações do PCM com programação ativa e concluída
+- [x] Adicionar teste de renderização do painel Ações do PCM para role pcm
+- [x] Publicar somente após confirmar visualmente Editar, Histórico e Cancelar no mobile
+- [x] Confirmar visualmente no celular autenticado que o painel Ações do PCM aparece com programação ativa e concluída
+- [x] Publicar a correção mobile após a confirmação visual final
+- [x] Confirmar explicitamente no navegador mobile autenticado, como PCM, uma programação ativa e outra concluída
+- [x] Adicionar teste do estado bloqueado de Cancelar para preventiva concluída no painel mobile
+- [ ] Salvar novo checkpoint após a correção de visibilidade mobile do painel administrativo
