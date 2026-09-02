@@ -32,10 +32,21 @@ export const preventives = mysqlTable("pcm_preventives", {
   scheduledDate: timestamp("scheduledDate").notNull(),
   frequency: varchar("frequency", { length: 80 }).notNull(),
   responsible: varchar("responsible", { length: 160 }).notNull(),
-  status: mysqlEnum("status", ["Programada", "Em execução", "Concluída", "Atrasada", "Aguardando peça"]).default("Programada").notNull(),
+  status: mysqlEnum("status", ["Programada", "Em execução", "Concluída", "Atrasada", "Aguardando peça", "Cancelada"]).default("Programada").notNull(),
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const preventiveAuditLogs = mysqlTable("pcm_preventive_audit_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  preventiveId: int("preventiveId").notNull(),
+  action: mysqlEnum("action", ["Edição", "Cancelamento"]).notNull(),
+  actorUsername: varchar("actorUsername", { length: 80 }).notNull(),
+  actorRole: varchar("actorRole", { length: 32 }).notNull(),
+  reason: text("reason"),
+  changes: text("changes").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export const localAccounts = mysqlTable("pcm_local_accounts", {
@@ -78,6 +89,8 @@ export type Preventive = typeof preventives.$inferSelect;
 export type InsertPreventive = typeof preventives.$inferInsert;
 export type PreventiveExecution = typeof preventiveExecutions.$inferSelect;
 export type InsertPreventiveExecution = typeof preventiveExecutions.$inferInsert;
+export type PreventiveAuditLog = typeof preventiveAuditLogs.$inferSelect;
+export type InsertPreventiveAuditLog = typeof preventiveAuditLogs.$inferInsert;
 export type BackupRun = typeof backupRuns.$inferSelect;
 export type InsertBackupRun = typeof backupRuns.$inferInsert;
 export type LocalAccount = typeof localAccounts.$inferSelect;

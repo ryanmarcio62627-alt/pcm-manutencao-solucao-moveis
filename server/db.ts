@@ -9,7 +9,9 @@ import {
   PreventiveExecution,
   machines,
   preventiveExecutions,
+  preventiveAuditLogs,
   preventives,
+  PreventiveAuditLog,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { users, InsertUser } from "../drizzle/schema";
@@ -117,6 +119,65 @@ export async function updatePreventive(id: number, input: Partial<InsertPreventi
   return rows[0];
 }
 
+function auditValue(value: unknown) {
+  if (value instanceof Date) return value.toLocaleString("pt-BR");
+  if (value === null || value === undefined || value === "") return "vazio";
+  return String(value);
+}
+
+const auditedPreventiveFields: Array<keyof Preventive> = ["machineName", "sector", "task", "scheduledDate", "frequency", "responsible", "status", "notes"];
+
+function describePreventiveChanges(before: Preventive, after: Partial<InsertPreventive>) {
+  const changes = auditedPreventiveFields.filter((field) => after[field] !== undefined && auditValue(before[field]) !== auditValue(after[field])).map((field) => `${field}: ${auditValue(before[field])} → ${auditValue(after[field])}`);
+  return changes.length ? changes.join(" | ") : "Nenhuma alteração de conteúdo registrada.";
+}
+
+export async function createPreventiveAuditLog(input: Omit<PreventiveAuditLog, "id" | "createdAt">) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  const result = await db.insert(preventiveAuditLogs).values(input);
+  const rows = await db.select().from(preventiveAuditLogs).where(eq(preventiveAuditLogs.id, result[0].insertId));
+  return rows[0];
+}
+
+export async function updatePreventiveWithAudit(id: number, input: Partial<InsertPreventive>, actor: { username: string; role: string }, reason?: string, dbOverride?: any) {
+  const db = dbOverride ?? await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  const before = (await db.select().from(preventives).where(eq(preventives.id, id)).limit(1))[0];
+  if (!before) throw new Error("Programação preventiva não encontrada.");
+  if (before.status === "Cancelada") throw new Error("Uma programação cancelada não pode ser editada.");
+  if (input.status === "Cancelada") throw new Error("Use o cancelamento com motivo para encerrar uma programação.");
+  const changes = describePreventiveChanges(before, input);
+  const persist = async (tx: any) => {
+    await tx.update(preventives).set(input).where(eq(preventives.id, id));
+    await tx.insert(preventiveAuditLogs).values({ preventiveId: id, action: "Edição", actorUsername: actor.username, actorRole: actor.role, reason: reason ?? null, changes });
+  };
+  if (dbOverride) await persist(dbOverride); else await db.transaction(persist);
+  return (await db.select().from(preventives).where(eq(preventives.id, id)).limit(1))[0];
+}
+
+export async function cancelPreventive(id: number, reason: string, actor: { username: string; role: string }, dbOverride?: any) {
+  const db = dbOverride ?? await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  const before = (await db.select().from(preventives).where(eq(preventives.id, id)).limit(1))[0];
+  if (!before) throw new Error("Programação preventiva não encontrada.");
+  if (before.status === "Cancelada") throw new Error("Esta programação já está cancelada.");
+  if (before.status === "Concluída") throw new Error("Uma preventiva concluída não pode ser cancelada.");
+  const changes = `status: ${auditValue(before.status)} → Cancelada`;
+  const persist = async (tx: any) => {
+    await tx.update(preventives).set({ status: "Cancelada" }).where(eq(preventives.id, id));
+    await tx.insert(preventiveAuditLogs).values({ preventiveId: id, action: "Cancelamento", actorUsername: actor.username, actorRole: actor.role, reason, changes });
+  };
+  if (dbOverride) await persist(dbOverride); else await db.transaction(persist);
+  return (await db.select().from(preventives).where(eq(preventives.id, id)).limit(1))[0];
+}
+
+export async function listPreventiveAuditLogs(preventiveId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(preventiveAuditLogs).where(eq(preventiveAuditLogs.preventiveId, preventiveId)).orderBy(desc(preventiveAuditLogs.createdAt), desc(preventiveAuditLogs.id));
+}
+
 function addMonthsKeepingDay(date: Date, months: number) {
   const next = new Date(date);
   const originalDay = next.getDate();
@@ -176,16 +237,17 @@ export async function createExecution(input: InsertPreventiveExecution): Promise
 }
 
 export function calculatePcmSummary(allPreventives: Preventive[], rows: PreventiveExecution[]) {
+  const activePreventives = allPreventives.filter((preventive) => preventive.status !== "Cancelada");
   const machineMap = new Map<string, { name: string; total: number; done: number; downtimeMinutes: number }>();
   const sectorMap = new Map<string, { name: string; total: number; done: number; downtimeMinutes: number }>();
-  for (const preventive of allPreventives) {
+  for (const preventive of activePreventives) {
     const done = preventive.status === "Concluída" ? 1 : 0;
     const machine = machineMap.get(preventive.machineName) ?? { name: preventive.machineName, total: 0, done: 0, downtimeMinutes: 0 };
     machine.total += 1; machine.done += done; machineMap.set(preventive.machineName, machine);
     const sector = sectorMap.get(preventive.sector) ?? { name: preventive.sector, total: 0, done: 0, downtimeMinutes: 0 };
     sector.total += 1; sector.done += done; sectorMap.set(preventive.sector, sector);
   }
-  const preventiveById = new Map(allPreventives.map((p) => [p.id, p]));
+  const preventiveById = new Map(activePreventives.map((p) => [p.id, p]));
   for (const execution of rows) {
     const preventive = preventiveById.get(execution.preventiveId);
     if (!preventive) continue;
@@ -214,6 +276,7 @@ export function calculateMonthlyPreventiveSummary(allPreventives: Preventive[], 
   });
   const monthMap = new Map(months.map((month) => [month.key, month]));
   for (const preventive of allPreventives) {
+    if (preventive.status === "Cancelada") continue;
     const scheduled = new Date(preventive.scheduledDate);
     const key = `${scheduled.getFullYear()}-${String(scheduled.getMonth() + 1).padStart(2, "0")}`;
     const month = monthMap.get(key);

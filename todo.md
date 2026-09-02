@@ -82,3 +82,10 @@
 - [x] Validar que App e Home usam a política de sessão mobile sem refetch por foco
 - [x] Cobrir login local, leitura de sessão e nova leitura após reconexão
 - [x] Validar flags HTTP-only, secure, sameSite e overwrite no cookie do login local
+- [x] Criar histórico persistente de alterações das programações preventivas
+- [x] Implementar edição protegida de programação pelo PCM
+- [x] Implementar cancelamento protegido com motivo obrigatório
+- [x] Exibir histórico da programação na interface
+- [x] Testar auditoria, permissões, edição e cancelamento sem apagar registros
+- [x] Testar fluxo real de edição e cancelamento mantendo a preventiva existente no banco
+- [x] Confirmar leitura real dos registros em pcm_preventive_audit_logs após edição e cancelamento
