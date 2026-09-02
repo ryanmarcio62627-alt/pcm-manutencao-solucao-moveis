@@ -58,8 +58,9 @@
 - [x] Validar a saudação real após login PCM e login de técnico
 - [x] Garantir que o teste de componente da saudação seja descoberto e executado pelo Vitest
 - [ ] Validar a saudação após login real como PCM e como técnico
-- [ ] Corrigir sessão para não reutilizar o usuário Ryan ao entrar como técnico
+- [x] Corrigir sessão para não reutilizar o usuário Ryan ao entrar como técnico
 - [ ] Validar troca de login PCM/técnico e saudação em sessões separadas
-- [ ] Implementar atualização segura do cookie e do estado auth.local.me ao trocar de usuário
-- [ ] Adicionar teste de integração da troca Ryan para técnico e técnico para Ryan
+- [x] Implementar atualização segura do cookie e do estado auth.local.me ao trocar de usuário
+- [x] Adicionar teste de integração da troca Ryan para técnico e técnico para Ryan
 - [ ] Validar manualmente logout, login técnico e saudação sem reutilizar a sessão anterior
+- [x] Cobrir também a troca de Josias para Ryan com cookie, sessão e saudação corretos

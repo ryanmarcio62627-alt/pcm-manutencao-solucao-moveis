@@ -11,7 +11,7 @@ import { trpc } from "@/lib/trpc";
 function LoginGate() {
   const session = trpc.auth.local.me.useQuery();
   if (session.isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#f6f8fb] text-sm font-semibold text-slate-500">Carregando acesso...</div>;
-  if (!session.data) return <Login onLoggedIn={() => session.refetch()} />;
+  if (!session.data) return <Login onLoggedIn={() => window.location.reload()} />;
   return <Router />;
 }
 
