@@ -64,3 +64,10 @@
 - [x] Adicionar teste de integração da troca Ryan para técnico e técnico para Ryan
 - [ ] Validar manualmente logout, login técnico e saudação sem reutilizar a sessão anterior
 - [x] Cobrir também a troca de Josias para Ryan com cookie, sessão e saudação corretos
+- [x] Investigar desconexão ao arrastar ou rolar a tela no celular
+- [x] Corrigir navegação por toque sem disparar logout ou recarga indevida
+- [ ] Validar sessão e rolagem em viewport mobile
+- [x] Evitar que pull-to-refresh ou revalidação durante rolagem pareça um logout no celular
+- [ ] Validar em navegador mobile autenticado que rolar não retorna ao login
+- [ ] Adicionar teste ou instrumentação para foco e reconexão após login local
+- [ ] Confirmar que o cookie/token permanece disponível durante o gesto de rolagem

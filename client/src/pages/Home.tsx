@@ -73,7 +73,7 @@ export default function Home() {
   const machinesQuery = trpc.machines.list.useQuery();
   const preventivesQuery = trpc.preventives.list.useQuery();
   const summaryQuery = trpc.preventives.summary.useQuery();
-  const localSession = trpc.auth.local.me.useQuery();
+  const localSession = trpc.auth.local.me.useQuery(undefined, { refetchOnWindowFocus: false, refetchOnReconnect: true, retry: 1 });
   const canManage = localSession.data?.role === "pcm";
   const currentUserName = formatLocalUserName(localSession.data?.username);
   const localLogout = trpc.auth.local.logout.useMutation({ onSuccess: () => window.location.reload() });
