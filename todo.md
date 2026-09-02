@@ -57,22 +57,28 @@
 - [x] Adicionar teste de componente ou integração da saudação na tela Home
 - [x] Validar a saudação real após login PCM e login de técnico
 - [x] Garantir que o teste de componente da saudação seja descoberto e executado pelo Vitest
-- [ ] Validar a saudação após login real como PCM e como técnico
+- [x] Validar a saudação após login real como PCM e como técnico
 - [x] Corrigir sessão para não reutilizar o usuário Ryan ao entrar como técnico
-- [ ] Validar troca de login PCM/técnico e saudação em sessões separadas
+- [x] Validar troca de login PCM/técnico e saudação em sessões separadas
 - [x] Implementar atualização segura do cookie e do estado auth.local.me ao trocar de usuário
 - [x] Adicionar teste de integração da troca Ryan para técnico e técnico para Ryan
-- [ ] Validar manualmente logout, login técnico e saudação sem reutilizar a sessão anterior
+- [x] Validar manualmente logout, login técnico e saudação sem reutilizar a sessão anterior
 - [x] Cobrir também a troca de Josias para Ryan com cookie, sessão e saudação corretos
 - [x] Investigar desconexão ao arrastar ou rolar a tela no celular
 - [x] Corrigir navegação por toque sem disparar logout ou recarga indevida
-- [ ] Validar sessão e rolagem em viewport mobile
+- [x] Validar sessão e rolagem em viewport mobile
 - [x] Evitar que pull-to-refresh ou revalidação durante rolagem pareça um logout no celular
-- [ ] Validar em navegador mobile autenticado que rolar não retorna ao login
+- [x] Validar em navegador mobile autenticado que rolar não retorna ao login
 - [x] Adicionar teste ou instrumentação para foco e reconexão após login local
-- [ ] Confirmar que o cookie/token permanece disponível durante o gesto de rolagem
+- [x] Confirmar que o cookie/token permanece disponível durante o gesto de rolagem
 - [x] Gerar automaticamente a próxima preventiva após a conclusão da atual
 - [x] Criar visão inicial de hoje, próximos 7 dias e atrasadas
 - [x] Adicionar histórico detalhado de preventivas por máquina
 - [x] Adicionar indicadores mensais de cumprimento e backlog
 - [x] Testar as melhorias preventivas sem inserir dados fictícios no banco
+- [x] Adicionar validação que confirme auth.local.me autenticado durante scroll e pull-to-refresh mobile
+- [x] Criar teste integrado de sessão/cookie após foco, reconexão e rolagem mobile
+- [x] Criar integração real de auth.local.me com cookie HTTP-only e leituras repetidas após reconexão
+- [x] Validar que App e Home usam a política de sessão mobile sem refetch por foco
+- [x] Cobrir login local, leitura de sessão e nova leitura após reconexão
+- [x] Validar flags HTTP-only, secure, sameSite e overwrite no cookie do login local
