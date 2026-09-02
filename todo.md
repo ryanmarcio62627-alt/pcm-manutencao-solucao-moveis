@@ -52,3 +52,14 @@
 - [x] Testar permissões e acesso individual da equipe de campo
 - [x] Testar que o perfil campo não acessa os procedimentos de gestão de contas
 - [x] Testar login individual de conta criada e bloqueio após desativação
+- [x] Corrigir saudação para exibir o usuário autenticado em vez de Ryan fixo
+- [x] Validar saudação dinâmica para PCM e técnicos de campo
+- [x] Adicionar teste de componente ou integração da saudação na tela Home
+- [x] Validar a saudação real após login PCM e login de técnico
+- [x] Garantir que o teste de componente da saudação seja descoberto e executado pelo Vitest
+- [ ] Validar a saudação após login real como PCM e como técnico
+- [ ] Corrigir sessão para não reutilizar o usuário Ryan ao entrar como técnico
+- [ ] Validar troca de login PCM/técnico e saudação em sessões separadas
+- [ ] Implementar atualização segura do cookie e do estado auth.local.me ao trocar de usuário
+- [ ] Adicionar teste de integração da troca Ryan para técnico e técnico para Ryan
+- [ ] Validar manualmente logout, login técnico e saudação sem reutilizar a sessão anterior
