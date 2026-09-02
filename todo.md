@@ -43,4 +43,4 @@
 - [x] Exibir histórico consultável de backups com data, status, quantidade e acesso ao arquivo
 - [x] Adicionar testes para criação/listagem de backups e autorização do relatório PDF
 - [x] Validar no navegador os fluxos de login PCM/campo, bloqueio por perfil, relatório e backup
-- [ ] Criar e ativar o agendamento diário do backup após a publicação
+- [x] Criar e ativar o agendamento diário do backup após a publicação — task_uid: mYV2QQdSS9s5aox2i6uCBc
