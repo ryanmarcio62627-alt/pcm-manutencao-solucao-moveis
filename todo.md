@@ -44,3 +44,11 @@
 - [x] Adicionar testes para criação/listagem de backups e autorização do relatório PDF
 - [x] Validar no navegador os fluxos de login PCM/campo, bloqueio por perfil, relatório e backup
 - [x] Criar e ativar o agendamento diário do backup após a publicação — task_uid: mYV2QQdSS9s5aox2i6uCBc
+
+- [x] Criar contas individuais para técnicos com nome, usuário, senha e status ativo
+- [x] Armazenar senhas de técnicos somente como hash seguro
+- [x] Permitir ao PCM cadastrar, desativar e redefinir acessos de campo
+- [x] Fazer o login aceitar contas individuais de técnicos
+- [x] Testar permissões e acesso individual da equipe de campo
+- [x] Testar que o perfil campo não acessa os procedimentos de gestão de contas
+- [x] Testar login individual de conta criada e bloqueio após desativação

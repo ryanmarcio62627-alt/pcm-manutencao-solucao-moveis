@@ -4,7 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
-import { createLocalToken, getLocalSession, validateLocalLogin, COOKIE_NAME as LOCAL_COOKIE } from "./localAuth";
+import { authenticateLocalLogin, createLocalAccount, createLocalToken, getLocalSession, listLocalAccounts, resetLocalAccountPassword, setLocalAccountActive, COOKIE_NAME as LOCAL_COOKIE } from "./localAuth";
 import { createPcmBackup, listPcmBackups } from "./backup";
 import {
   createExecution,
@@ -55,7 +55,7 @@ export const appRouter = router({
     local: router({
       me: publicProcedure.query(({ ctx }) => getLocalSession(ctx.req)),
       login: publicProcedure.input(z.object({ username: z.string().min(1), password: z.string().min(1) })).mutation(async ({ ctx, input }) => {
-        const session = validateLocalLogin(input.username, input.password);
+        const session = await authenticateLocalLogin(input.username, input.password);
         if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário ou senha inválidos." });
         const token = await createLocalToken(session);
         ctx.res.cookie(LOCAL_COOKIE, token, { httpOnly: true, secure: true, sameSite: "none", path: "/", maxAge: 60 * 60 * 12 });
@@ -76,6 +76,12 @@ export const appRouter = router({
     list: localProcedure.query(() => listMachines()),
     create: pcmProcedure.input(machineInput).mutation(({ input }) => createMachine(input)),
     update: pcmProcedure.input(z.object({ id: z.number(), data: machineInput.partial() })).mutation(({ input }) => updateMachine(input.id, input.data)),
+  }),
+  accounts: router({
+    list: pcmProcedure.query(() => listLocalAccounts()),
+    create: pcmProcedure.input(z.object({ username: z.string().min(3), displayName: z.string().min(2), password: z.string().min(8), role: z.enum(["campo", "pcm"]).default("campo") })).mutation(({ input }) => createLocalAccount(input)),
+    setActive: pcmProcedure.input(z.object({ id: z.number(), active: z.boolean() })).mutation(({ input }) => setLocalAccountActive(input.id, input.active)),
+    resetPassword: pcmProcedure.input(z.object({ id: z.number(), password: z.string().min(8) })).mutation(({ input }) => resetLocalAccountPassword(input.id, input.password)),
   }),
   backups: router({
     list: pcmProcedure.query(() => listPcmBackups()),

@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -38,6 +38,17 @@ export const preventives = mysqlTable("pcm_preventives", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const localAccounts = mysqlTable("pcm_local_accounts", {
+  id: int("id").autoincrement().primaryKey(),
+  username: varchar("username", { length: 80 }).notNull().unique(),
+  displayName: varchar("displayName", { length: 160 }).notNull(),
+  passwordHash: text("passwordHash").notNull(),
+  role: mysqlEnum("role", ["pcm", "campo"]).default("campo").notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export const backupRuns = mysqlTable("pcm_backup_runs", {
   id: int("id").autoincrement().primaryKey(),
   storageKey: varchar("storageKey", { length: 255 }).notNull(),
@@ -69,3 +80,5 @@ export type PreventiveExecution = typeof preventiveExecutions.$inferSelect;
 export type InsertPreventiveExecution = typeof preventiveExecutions.$inferInsert;
 export type BackupRun = typeof backupRuns.$inferSelect;
 export type InsertBackupRun = typeof backupRuns.$inferInsert;
+export type LocalAccount = typeof localAccounts.$inferSelect;
+export type InsertLocalAccount = typeof localAccounts.$inferInsert;
