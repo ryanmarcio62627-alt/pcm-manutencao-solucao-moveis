@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { calculatePcmSummary } from "./db";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
+import { createLocalToken } from "./localAuth";
 
 const mocks = vi.hoisted(() => ({
   createMachine: vi.fn(async (input: any) => ({ id: 1, ...input })),
@@ -18,8 +19,9 @@ vi.mock("./db", async (importOriginal) => {
   return { ...actual, ...mocks };
 });
 
-function createContext(): TrpcContext {
-  return { user: null, req: { protocol: "https", headers: {} } as TrpcContext["req"], res: {} as TrpcContext["res"] };
+async function createContext(): Promise<TrpcContext> {
+  const token = await createLocalToken({ username: "ryan", role: "pcm" });
+  return { user: null, req: { protocol: "https", headers: { cookie: `pcm_session=${token}` } } as TrpcContext["req"], res: {} as TrpcContext["res"] };
 }
 
 const preventive = (overrides: any = {}) => ({ id: 1, machineId: 1, machineName: "Prensa 01", sector: "Produção", task: "Lubrificar guias", scheduledDate: new Date("2026-09-10T12:00:00Z"), frequency: "Mensal", responsible: "Equipe A", status: "Programada", ...overrides });
@@ -36,7 +38,7 @@ describe("PCM", () => {
   });
 
   it("valida entradas e executa as mutations principais", async () => {
-    const caller = appRouter.createCaller(createContext());
+    const caller = appRouter.createCaller(await createContext());
     await expect(caller.machines.create({ name: "Prensa 01", sector: "Produção", code: "PR-01", criticality: "Alta", situation: "Operando" })).resolves.toMatchObject({ name: "Prensa 01" });
     await expect(caller.preventives.create({ machineId: 1, machineName: "Prensa 01", sector: "Produção", task: "Inspecionar", scheduledDate: new Date(), frequency: "Mensal", responsible: "Equipe A", status: "Programada" })).resolves.toMatchObject({ task: "Inspecionar" });
     await expect(caller.preventives.updateStatus({ id: 1, status: "Em execução" })).resolves.toMatchObject({ status: "Em execução" });

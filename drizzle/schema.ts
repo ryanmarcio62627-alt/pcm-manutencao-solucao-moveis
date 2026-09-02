@@ -38,6 +38,16 @@ export const preventives = mysqlTable("pcm_preventives", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const backupRuns = mysqlTable("pcm_backup_runs", {
+  id: int("id").autoincrement().primaryKey(),
+  storageKey: varchar("storageKey", { length: 255 }).notNull(),
+  storageUrl: varchar("storageUrl", { length: 512 }).notNull(),
+  itemCount: int("itemCount").default(0).notNull(),
+  status: mysqlEnum("status", ["Concluído", "Falhou"]).default("Concluído").notNull(),
+  errorMessage: text("errorMessage"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
 export const preventiveExecutions = mysqlTable("pcm_preventive_executions", {
   id: int("id").autoincrement().primaryKey(),
   preventiveId: int("preventiveId").notNull(),
@@ -57,3 +67,5 @@ export type Preventive = typeof preventives.$inferSelect;
 export type InsertPreventive = typeof preventives.$inferInsert;
 export type PreventiveExecution = typeof preventiveExecutions.$inferSelect;
 export type InsertPreventiveExecution = typeof preventiveExecutions.$inferInsert;
+export type BackupRun = typeof backupRuns.$inferSelect;
+export type InsertBackupRun = typeof backupRuns.$inferInsert;

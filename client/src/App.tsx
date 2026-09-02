@@ -4,7 +4,16 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+import Home from "@/pages/Home";
+import Login from "@/pages/Login";
+import { trpc } from "@/lib/trpc";
+
+function LoginGate() {
+  const session = trpc.auth.local.me.useQuery();
+  if (session.isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#f6f8fb] text-sm font-semibold text-slate-500">Carregando acesso...</div>;
+  if (!session.data) return <Login onLoggedIn={() => session.refetch()} />;
+  return <Router />;
+}
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -32,7 +41,7 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <LoginGate />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

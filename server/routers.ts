@@ -3,6 +3,9 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
+import { TRPCError } from "@trpc/server";
+import { createLocalToken, getLocalSession, validateLocalLogin, COOKIE_NAME as LOCAL_COOKIE } from "./localAuth";
+import { createPcmBackup, listPcmBackups } from "./backup";
 import {
   createExecution,
   createMachine,
@@ -34,10 +37,35 @@ const preventiveInput = z.object({
   notes: z.string().optional(),
 });
 
+const localProcedure = publicProcedure.use(async ({ ctx, next }) => {
+  const localUser = await getLocalSession(ctx.req);
+  if (!localUser) throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para acessar o sistema." });
+  return next({ ctx: { ...ctx, localUser } });
+});
+
+const pcmProcedure = localProcedure.use(({ ctx, next }) => {
+  if (ctx.localUser.role !== "pcm") throw new TRPCError({ code: "FORBIDDEN", message: "Acesso restrito ao PCM." });
+  return next({ ctx });
+});
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
+    local: router({
+      me: publicProcedure.query(({ ctx }) => getLocalSession(ctx.req)),
+      login: publicProcedure.input(z.object({ username: z.string().min(1), password: z.string().min(1) })).mutation(async ({ ctx, input }) => {
+        const session = validateLocalLogin(input.username, input.password);
+        if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário ou senha inválidos." });
+        const token = await createLocalToken(session);
+        ctx.res.cookie(LOCAL_COOKIE, token, { httpOnly: true, secure: true, sameSite: "none", path: "/", maxAge: 60 * 60 * 12 });
+        return session;
+      }),
+      logout: publicProcedure.mutation(({ ctx }) => {
+        ctx.res.clearCookie(LOCAL_COOKIE, { httpOnly: true, secure: true, sameSite: "none", path: "/", maxAge: -1 });
+        return { success: true } as const;
+      }),
+    }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -45,17 +73,21 @@ export const appRouter = router({
     }),
   }),
   machines: router({
-    list: publicProcedure.query(() => listMachines()),
-    create: publicProcedure.input(machineInput).mutation(({ input }) => createMachine(input)),
-    update: publicProcedure.input(z.object({ id: z.number(), data: machineInput.partial() })).mutation(({ input }) => updateMachine(input.id, input.data)),
+    list: localProcedure.query(() => listMachines()),
+    create: pcmProcedure.input(machineInput).mutation(({ input }) => createMachine(input)),
+    update: pcmProcedure.input(z.object({ id: z.number(), data: machineInput.partial() })).mutation(({ input }) => updateMachine(input.id, input.data)),
+  }),
+  backups: router({
+    list: pcmProcedure.query(() => listPcmBackups()),
+    create: pcmProcedure.mutation(() => createPcmBackup()),
   }),
   preventives: router({
-    list: publicProcedure.query(() => listPreventives()),
-    summary: publicProcedure.query(() => getPcmSummary()),
-    create: publicProcedure.input(preventiveInput).mutation(({ input }) => createPreventive(input)),
-    update: publicProcedure.input(z.object({ id: z.number(), data: preventiveInput.partial() })).mutation(({ input }) => updatePreventive(input.id, input.data)),
-    updateStatus: publicProcedure.input(z.object({ id: z.number(), status: preventiveInput.shape.status })).mutation(({ input }) => updatePreventive(input.id, { status: input.status })),
-    execute: publicProcedure.input(z.object({
+    list: localProcedure.query(() => listPreventives()),
+    summary: localProcedure.query(() => getPcmSummary()),
+    create: pcmProcedure.input(preventiveInput).mutation(({ input }) => createPreventive(input)),
+    update: pcmProcedure.input(z.object({ id: z.number(), data: preventiveInput.partial() })).mutation(({ input }) => updatePreventive(input.id, input.data)),
+    updateStatus: pcmProcedure.input(z.object({ id: z.number(), status: preventiveInput.shape.status })).mutation(({ input }) => updatePreventive(input.id, { status: input.status })),
+    execute: localProcedure.input(z.object({
       preventiveId: z.number(),
       executedAt: z.coerce.date(),
       responsible: z.string().min(2),

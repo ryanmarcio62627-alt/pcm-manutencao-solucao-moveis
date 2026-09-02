@@ -33,3 +33,14 @@
 - [x] Validar tecnicamente a criação de preventiva para a máquina K6 151 com data válida
 - [x] Impedir datas vazias ou fora do período permitido e exibir mensagem clara no cadastro
 - [x] Confirmar no banco a preventiva K6 151 com data válida sem inserir dados de teste
+
+- [x] Criar login com senha e perfis PCM e equipe de campo
+- [x] Restringir operações conforme o perfil do usuário
+- [x] Criar rotina de backup automático dos dados do PCM
+- [x] Registrar histórico e permitir consulta dos backups
+- [x] Gerar relatório gerencial em PDF com indicadores atuais
+- [x] Testar autenticação, permissões, backup e relatório
+- [x] Exibir histórico consultável de backups com data, status, quantidade e acesso ao arquivo
+- [x] Adicionar testes para criação/listagem de backups e autorização do relatório PDF
+- [x] Validar no navegador os fluxos de login PCM/campo, bloqueio por perfil, relatório e backup
+- [ ] Criar e ativar o agendamento diário do backup após a publicação

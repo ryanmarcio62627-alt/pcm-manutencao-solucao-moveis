@@ -8,6 +8,8 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { handleScheduledPcmBackup } from "../backup";
+import { handlePcmReport } from "../report";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -36,6 +38,8 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+  app.post("/api/scheduled/pcmBackup", handleScheduledPcmBackup);
+  app.get("/api/reports/pcm.pdf", handlePcmReport);
   // tRPC API
   app.use(
     "/api/trpc",
