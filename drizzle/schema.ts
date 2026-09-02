@@ -1,17 +1,7 @@
 import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
-/**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
- */
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
@@ -22,7 +12,48 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
+export const machines = mysqlTable("pcm_machines", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 160 }).notNull(),
+  sector: varchar("sector", { length: 120 }).notNull(),
+  code: varchar("code", { length: 80 }).notNull().unique(),
+  criticality: mysqlEnum("criticality", ["Baixa", "Média", "Alta", "Crítica"]).default("Média").notNull(),
+  situation: mysqlEnum("situation", ["Operando", "Parada", "Em manutenção", "Desativada"]).default("Operando").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const preventives = mysqlTable("pcm_preventives", {
+  id: int("id").autoincrement().primaryKey(),
+  machineId: int("machineId").notNull(),
+  machineName: varchar("machineName", { length: 160 }).notNull(),
+  sector: varchar("sector", { length: 120 }).notNull(),
+  task: text("task").notNull(),
+  scheduledDate: timestamp("scheduledDate").notNull(),
+  frequency: varchar("frequency", { length: 80 }).notNull(),
+  responsible: varchar("responsible", { length: 160 }).notNull(),
+  status: mysqlEnum("status", ["Programada", "Em execução", "Concluída", "Atrasada", "Aguardando peça"]).default("Programada").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const preventiveExecutions = mysqlTable("pcm_preventive_executions", {
+  id: int("id").autoincrement().primaryKey(),
+  preventiveId: int("preventiveId").notNull(),
+  executedAt: timestamp("executedAt").notNull(),
+  responsible: varchar("responsible", { length: 160 }).notNull(),
+  observation: text("observation"),
+  downtimeMinutes: int("downtimeMinutes").default(0).notNull(),
+  pending: text("pending"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-
-// TODO: Add your tables here
+export type Machine = typeof machines.$inferSelect;
+export type InsertMachine = typeof machines.$inferInsert;
+export type Preventive = typeof preventives.$inferSelect;
+export type InsertPreventive = typeof preventives.$inferInsert;
+export type PreventiveExecution = typeof preventiveExecutions.$inferSelect;
+export type InsertPreventiveExecution = typeof preventiveExecutions.$inferInsert;
