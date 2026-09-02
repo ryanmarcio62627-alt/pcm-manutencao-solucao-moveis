@@ -84,7 +84,21 @@ export async function updateMachine(id: number, input: Partial<InsertMachine>): 
 export async function listPreventives(): Promise<Preventive[]> {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(preventives).orderBy(desc(preventives.scheduledDate));
+  const rows = await db.select().from(preventives).orderBy(desc(preventives.scheduledDate));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  for (const row of rows) {
+    const scheduledDay = new Date(row.scheduledDate);
+    scheduledDay.setHours(0, 0, 0, 0);
+    const shouldBeLate = row.status === "Programada" && scheduledDay.getTime() < today.getTime();
+    const shouldReturnToProgrammed = row.status === "Atrasada" && scheduledDay.getTime() >= today.getTime();
+    if (shouldBeLate || shouldReturnToProgrammed) {
+      const nextStatus = shouldBeLate ? "Atrasada" : "Programada";
+      row.status = nextStatus;
+      await db.update(preventives).set({ status: nextStatus }).where(eq(preventives.id, row.id));
+    }
+  }
+  return rows;
 }
 
 export async function createPreventive(input: InsertPreventive): Promise<Preventive> {

@@ -12,7 +12,7 @@
 - [x] Persistência de máquinas, programações e registros de execução em banco de dados
 - [x] Criar testes Vitest para regras e procedimentos do PCM
 - [x] Validar visualmente os fluxos principais em desktop e celular
-- [ ] Criar checkpoint final antes da entrega
+- [x] Criar checkpoint final antes da entrega
 
 - [x] Implementar calendário real de preventivas com filtros por mês, setor, máquina e status
 - [x] Adicionar campo editável de data no registro de execução em campo
@@ -22,3 +22,14 @@
 - [x] Criar testes Vitest para mutations, validações, transições e cálculos de indicadores
 - [x] Sincronizar automaticamente os indicadores após alterações nas preventivas e execuções
 - [x] Cobrir cálculo de horas paradas, visão por máquina, validações e mutations com testes Vitest
+- [x] Corrigir falha ao salvar nova preventiva no banco e validar o cadastro com máquina K6 151
+- [x] Atualizar automaticamente preventivas vencidas para Atrasada conforme a data atual
+- [x] Melhorar calendário mensal com destaque para hoje, mês selecionado e próxima atividade
+- [x] Revisar tratamento de datas para evitar problemas de fuso e virada de mês
+- [x] Tornar a periodicidade mais clara no cadastro e na listagem das preventivas
+- [x] Adicionar o texto discreto PCM responsável: Ryan Márcio em todas as abas
+- [x] Destacar no calendário a próxima preventiva programada
+- [x] Melhorar a apresentação da periodicidade com rótulo e orientação visual
+- [x] Validar tecnicamente a criação de preventiva para a máquina K6 151 com data válida
+- [x] Impedir datas vazias ou fora do período permitido e exibir mensagem clara no cadastro
+- [x] Confirmar no banco a preventiva K6 151 com data válida sem inserir dados de teste

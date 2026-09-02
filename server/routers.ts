@@ -27,7 +27,7 @@ const preventiveInput = z.object({
   machineName: z.string(),
   sector: z.string(),
   task: z.string().min(3),
-  scheduledDate: z.coerce.date(),
+  scheduledDate: z.coerce.date().refine((date) => date.getFullYear() >= 2020 && date.getFullYear() <= 2037, "Informe uma data válida entre 2020 e 2037"),
   frequency: z.string().min(2),
   responsible: z.string().min(2),
   status: z.enum(["Programada", "Em execução", "Concluída", "Atrasada", "Aguardando peça"]),
