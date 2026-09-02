@@ -117,11 +117,60 @@ export async function updatePreventive(id: number, input: Partial<InsertPreventi
   return rows[0];
 }
 
+function addMonthsKeepingDay(date: Date, months: number) {
+  const next = new Date(date);
+  const originalDay = next.getDate();
+  next.setDate(1);
+  next.setMonth(next.getMonth() + months);
+  const lastDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+  next.setDate(Math.min(originalDay, lastDay));
+  return next;
+}
+
+export function getNextPreventiveDate(date: Date | string | number, frequency: string): Date | null {
+  const next = new Date(date);
+  if (Number.isNaN(next.getTime())) return null;
+  const normalized = frequency.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (normalized === "diaria") next.setDate(next.getDate() + 1);
+  else if (normalized === "semanal") next.setDate(next.getDate() + 7);
+  else if (normalized === "quinzenal") next.setDate(next.getDate() + 14);
+  else if (normalized === "mensal") return addMonthsKeepingDay(next, 1);
+  else if (normalized === "trimestral") return addMonthsKeepingDay(next, 3);
+  else if (normalized === "semestral") return addMonthsKeepingDay(next, 6);
+  else if (normalized === "anual") return addMonthsKeepingDay(next, 12);
+  else return null;
+  return next;
+}
+
 export async function createExecution(input: InsertPreventiveExecution): Promise<PreventiveExecution> {
   const db = await getDb();
   if (!db) throw new Error("Banco de dados indisponível");
+  const preventiveRows = await db.select().from(preventives).where(eq(preventives.id, input.preventiveId));
+  const preventive = preventiveRows[0];
   const result = await db.insert(preventiveExecutions).values(input);
   await db.update(preventives).set({ status: "Concluída" }).where(eq(preventives.id, input.preventiveId));
+
+  if (preventive) {
+    const nextDate = getNextPreventiveDate(preventive.scheduledDate, preventive.frequency);
+    if (nextDate && nextDate.getFullYear() <= 2037) {
+      const siblings = await db.select().from(preventives).where(eq(preventives.machineId, preventive.machineId));
+      const alreadyGenerated = siblings.some((item) => item.task === preventive.task && new Date(item.scheduledDate).getTime() === nextDate.getTime());
+      if (!alreadyGenerated) {
+        await db.insert(preventives).values({
+          machineId: preventive.machineId,
+          machineName: preventive.machineName,
+          sector: preventive.sector,
+          task: preventive.task,
+          scheduledDate: nextDate,
+          frequency: preventive.frequency,
+          responsible: preventive.responsible,
+          status: "Programada",
+          notes: `Gerada automaticamente após a conclusão da preventiva #${preventive.id}.`,
+        });
+      }
+    }
+  }
+
   const rows = await db.select().from(preventiveExecutions).where(eq(preventiveExecutions.id, result[0].insertId));
   return rows[0];
 }
@@ -152,4 +201,56 @@ export async function getPcmSummary() {
   const rows = await db.select().from(preventiveExecutions).orderBy(desc(preventiveExecutions.executedAt));
   const allPreventives = await db.select().from(preventives);
   return calculatePcmSummary(allPreventives, rows);
+}
+
+export function calculateMonthlyPreventiveSummary(allPreventives: Preventive[], referenceDate = new Date()) {
+  const current = new Date(referenceDate);
+  current.setDate(1); current.setHours(0, 0, 0, 0);
+  const months = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(current);
+    date.setMonth(current.getMonth() - (5 - index));
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    return { key, total: 0, done: 0, backlog: 0, compliance: 0 };
+  });
+  const monthMap = new Map(months.map((month) => [month.key, month]));
+  for (const preventive of allPreventives) {
+    const scheduled = new Date(preventive.scheduledDate);
+    const key = `${scheduled.getFullYear()}-${String(scheduled.getMonth() + 1).padStart(2, "0")}`;
+    const month = monthMap.get(key);
+    if (!month) continue;
+    month.total += 1;
+    if (preventive.status === "Concluída") month.done += 1;
+    if (preventive.status !== "Concluída" && scheduled.getTime() <= referenceDate.getTime()) month.backlog += 1;
+  }
+  return months.map((month) => ({ ...month, compliance: month.total ? Math.round((month.done / month.total) * 100) : 0 }));
+}
+
+export async function getMonthlyPreventiveSummary() {
+  const allPreventives = await listPreventives();
+  return calculateMonthlyPreventiveSummary(allPreventives);
+}
+
+export async function getPreventiveMachineHistory(machineId: number) {
+  const db = await getDb();
+  if (!db) return { machineId, machineName: null, total: 0, done: 0, backlog: 0, preventives: [] };
+  const allPreventives = await listPreventives();
+  const machinePreventives = allPreventives.filter((preventive) => preventive.machineId === machineId);
+  const executions = await db.select().from(preventiveExecutions).orderBy(desc(preventiveExecutions.executedAt));
+  const preventiveIds = new Set(machinePreventives.map((preventive) => preventive.id));
+  const machineExecutions = executions.filter((execution) => preventiveIds.has(execution.preventiveId));
+  const executionsByPreventive = new Map<number, PreventiveExecution[]>();
+  for (const execution of machineExecutions) {
+    const list = executionsByPreventive.get(execution.preventiveId) ?? [];
+    list.push(execution);
+    executionsByPreventive.set(execution.preventiveId, list);
+  }
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  return {
+    machineId,
+    machineName: machinePreventives[0]?.machineName ?? null,
+    total: machinePreventives.length,
+    done: machinePreventives.filter((preventive) => preventive.status === "Concluída").length,
+    backlog: machinePreventives.filter((preventive) => preventive.status !== "Concluída" && new Date(preventive.scheduledDate).getTime() <= today.getTime()).length,
+    preventives: machinePreventives.map((preventive) => ({ ...preventive, executions: executionsByPreventive.get(preventive.id) ?? [] })),
+  };
 }

@@ -7,9 +7,10 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import { trpc } from "@/lib/trpc";
+import { localSessionQueryOptions } from "@shared/localSessionPolicy";
 
 function LoginGate() {
-  const session = trpc.auth.local.me.useQuery(undefined, { refetchOnWindowFocus: false, refetchOnReconnect: true, retry: 1 });
+  const session = trpc.auth.local.me.useQuery(undefined, localSessionQueryOptions);
   if (session.isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#f6f8fb] text-sm font-semibold text-slate-500">Carregando acesso...</div>;
   if (!session.data) return <Login onLoggedIn={() => window.location.reload()} />;
   return <Router />;

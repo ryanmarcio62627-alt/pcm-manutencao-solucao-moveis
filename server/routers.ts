@@ -10,7 +10,9 @@ import {
   createExecution,
   createMachine,
   createPreventive,
+  getMonthlyPreventiveSummary,
   getPcmSummary,
+  getPreventiveMachineHistory,
   listMachines,
   listPreventives,
   updateMachine,
@@ -93,6 +95,8 @@ export const appRouter = router({
   preventives: router({
     list: localProcedure.query(() => listPreventives()),
     summary: localProcedure.query(() => getPcmSummary()),
+    monthlySummary: pcmProcedure.query(() => getMonthlyPreventiveSummary()),
+    machineHistory: localProcedure.input(z.object({ machineId: z.number() })).query(({ input }) => getPreventiveMachineHistory(input.machineId)),
     create: pcmProcedure.input(preventiveInput).mutation(({ input }) => createPreventive(input)),
     update: pcmProcedure.input(z.object({ id: z.number(), data: preventiveInput.partial() })).mutation(({ input }) => updatePreventive(input.id, input.data)),
     updateStatus: pcmProcedure.input(z.object({ id: z.number(), status: preventiveInput.shape.status })).mutation(({ input }) => updatePreventive(input.id, { status: input.status })),

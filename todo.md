@@ -69,5 +69,10 @@
 - [ ] Validar sessão e rolagem em viewport mobile
 - [x] Evitar que pull-to-refresh ou revalidação durante rolagem pareça um logout no celular
 - [ ] Validar em navegador mobile autenticado que rolar não retorna ao login
-- [ ] Adicionar teste ou instrumentação para foco e reconexão após login local
+- [x] Adicionar teste ou instrumentação para foco e reconexão após login local
 - [ ] Confirmar que o cookie/token permanece disponível durante o gesto de rolagem
+- [x] Gerar automaticamente a próxima preventiva após a conclusão da atual
+- [x] Criar visão inicial de hoje, próximos 7 dias e atrasadas
+- [x] Adicionar histórico detalhado de preventivas por máquina
+- [x] Adicionar indicadores mensais de cumprimento e backlog
+- [x] Testar as melhorias preventivas sem inserir dados fictícios no banco
