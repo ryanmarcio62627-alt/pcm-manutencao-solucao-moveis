@@ -99,4 +99,17 @@
 - [x] Publicar a correção mobile após a confirmação visual final
 - [x] Confirmar explicitamente no navegador mobile autenticado, como PCM, uma programação ativa e outra concluída
 - [x] Adicionar teste do estado bloqueado de Cancelar para preventiva concluída no painel mobile
-- [ ] Salvar novo checkpoint após a correção de visibilidade mobile do painel administrativo
+- [x] Salvar novo checkpoint após a correção de visibilidade mobile do painel administrativo
+- [x] Investigar erro “faça login para acessar o sistema” ao confirmar cancelamento
+- [x] Corrigir cancelamento para preservar a sessão do PCM
+- [x] Testar motivo, cancelamento lógico e auditoria sem perder autenticação
+- [x] Tornar o cookie de sessão local compatível com navegadores mobile usando SameSite apropriado
+- [x] Evitar limpar ou perder a sessão durante a mutation de cancelamento
+- [x] Exibir tratamento claro quando a sessão expirar durante o cancelamento
+- [x] Reproduzir e validar no navegador o cancelamento de uma preventiva logado como PCM
+- [x] Adicionar teste integrado autenticado que cancele uma programação válida e confirme auth.local.me depois
+- [x] Publicar a correção do cancelamento somente após confirmar o fluxo completo
+- [x] Testar no navegador, logado como PCM, o cancelamento completo sem voltar à tela de login
+- [x] Testar via appRouter o procedimento preventives.cancel com sessão autenticada e consultar auth.local.me depois
+- [x] Salvar e publicar novo checkpoint após a validação manual e automatizada do cancelamento
+- [x] Documentar e validar a decisão SameSite do cookie local para o caso mobile

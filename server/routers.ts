@@ -48,7 +48,9 @@ const localProcedure = publicProcedure.use(async ({ ctx, next }) => {
   return next({ ctx: { ...ctx, localUser } });
 });
 
+// SameSite=None is intentional: the published app can be embedded or proxied across origins; Secure and HttpOnly remain mandatory.
 const localCookieOptions = { httpOnly: true, secure: true, sameSite: "none" as const, path: "/", overwrite: true };
+function clearLocalSession(res: { clearCookie: (name: string, options?: Record<string, unknown>) => void }) { res.clearCookie(LOCAL_COOKIE, { ...localCookieOptions }); }
 
 const pcmProcedure = localProcedure.use(({ ctx, next }) => {
   if (ctx.localUser.role !== "pcm") throw new TRPCError({ code: "FORBIDDEN", message: "Acesso restrito ao PCM." });
@@ -62,7 +64,7 @@ export const appRouter = router({
     local: router({
       me: publicProcedure.query(({ ctx }) => getLocalSession(ctx.req)),
       login: publicProcedure.input(z.object({ username: z.string().min(1), password: z.string().min(1) })).mutation(async ({ ctx, input }) => {
-        ctx.res.clearCookie(LOCAL_COOKIE, { ...localCookieOptions, maxAge: -1 });
+        clearLocalSession(ctx.res);
         const session = await authenticateLocalLogin(input.username, input.password);
         if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário ou senha inválidos." });
         const token = await createLocalToken(session);
@@ -70,7 +72,7 @@ export const appRouter = router({
         return session;
       }),
       logout: publicProcedure.mutation(({ ctx }) => {
-        ctx.res.clearCookie(LOCAL_COOKIE, { ...localCookieOptions, maxAge: -1 });
+        clearLocalSession(ctx.res);
         return { success: true } as const;
       }),
     }),

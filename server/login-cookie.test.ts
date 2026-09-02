@@ -29,6 +29,8 @@ describe("cookie de login local", () => {
     await caller.auth.local.login({ username: "josias", password: "senha" });
 
     expect(res.clearCookie).toHaveBeenCalledTimes(4);
+    expect(res.clearCookie).toHaveBeenNthCalledWith(1, "pcm_session", expect.objectContaining({ httpOnly: true, secure: true, sameSite: "none", path: "/", overwrite: true }));
+    expect(res.clearCookie).toHaveBeenNthCalledWith(4, "pcm_session", expect.objectContaining({ httpOnly: true, secure: true, sameSite: "none", path: "/", overwrite: true }));
     expect(res.cookie).toHaveBeenNthCalledWith(1, "pcm_session", "token-ryan", expect.objectContaining({ overwrite: true, maxAge: 60 * 60 * 12 }));
     expect(res.cookie).toHaveBeenNthCalledWith(2, "pcm_session", "token-josias", expect.objectContaining({ overwrite: true, maxAge: 60 * 60 * 12 }));
     expect(res.cookie).toHaveBeenNthCalledWith(3, "pcm_session", "token-ryan-2", expect.objectContaining({ overwrite: true, maxAge: 60 * 60 * 12 }));

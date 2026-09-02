@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { eq, inArray } from "drizzle-orm";
 import { getDb, updatePreventiveWithAudit, cancelPreventive } from "./db";
 import { preventiveAuditLogs, preventives } from "../drizzle/schema";
+import { appRouter } from "./routers";
+import { createLocalToken } from "./localAuth";
 
 describe("persistência da auditoria de preventivas", () => {
   it("mantém a preventiva e grava edição/cancelamento dentro da transação", async () => {
@@ -45,5 +47,31 @@ describe("persistência da auditoria de preventivas", () => {
     expect(after?.notes).toBe(before.notes);
     expect(after?.status).toBe(before.status);
     expect(afterAudits.filter((audit) => audit.preventiveId === before.id)).toHaveLength(previousAuditCount);
+  });
+
+  it("mantém auth.local.me autenticado depois de um cancelamento autenticado", async () => {
+    const db = await getDb();
+    if (!db) throw new Error("Banco de dados indisponível para o teste integrado.");
+    const [before] = await db.select().from(preventives).where(inArray(preventives.status, ["Programada", "Em execução", "Atrasada", "Aguardando peça"])).limit(1);
+    if (!before) throw new Error("Nenhuma preventiva ativa disponível para o teste integrado.");
+
+    const token = await createLocalToken({ username: "ryan", role: "pcm" });
+    const caller = appRouter.createCaller({ user: null, req: { headers: { cookie: `pcm_session=${token}` } } as any, res: {} as any });
+    await expect(caller.auth.local.me()).resolves.toMatchObject({ username: "ryan", role: "pcm" });
+
+    const rollback = Symbol("rollback-auth");
+    try {
+      await db.transaction(async (tx) => {
+        await cancelPreventive(before.id, "Teste autenticado com rollback", { username: "ryan", role: "pcm" }, tx);
+        await expect(caller.auth.local.me()).resolves.toMatchObject({ username: "ryan", role: "pcm" });
+        throw rollback;
+      });
+    } catch (error) {
+      expect(error).toBe(rollback);
+    }
+
+    const [after] = await db.select().from(preventives).where(eq(preventives.id, before.id));
+    expect(after?.status).toBe(before.status);
+    await expect(caller.auth.local.me()).resolves.toMatchObject({ username: "ryan", role: "pcm" });
   });
 });

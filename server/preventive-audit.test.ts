@@ -34,6 +34,19 @@ describe("auditoria de programações preventivas", () => {
     await expect(caller.preventives.cancel({ id: 8, reason: "não" })).rejects.toThrow();
   });
 
+  it("mantém a sessão após o cancelamento chamado pelo procedimento tRPC", async () => {
+    const caller = appRouter.createCaller(await contextFor("ryan", "pcm"));
+    await expect(caller.preventives.cancel({ id: 8, reason: "Cancelamento autenticado" })).resolves.toMatchObject({ id: 8, status: "Cancelada" });
+    await expect(caller.auth.local.me()).resolves.toMatchObject({ username: "ryan", role: "pcm" });
+    expect(mocks.cancelPreventive).toHaveBeenCalledWith(8, "Cancelamento autenticado", { username: "ryan", role: "pcm" });
+  });
+
+  it("recusa cancelamento quando a sessão local está ausente", async () => {
+    const caller = appRouter.createCaller({ user: null, req: { headers: {} } as any, res: {} as any });
+    await expect(caller.preventives.cancel({ id: 8, reason: "Tentativa sem sessão" })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    expect(mocks.cancelPreventive).not.toHaveBeenCalledWith(8, "Tentativa sem sessão", expect.anything());
+  });
+
   it("bloqueia edição, cancelamento e histórico para a equipe de campo", async () => {
     const caller = appRouter.createCaller(await contextFor("josias", "campo"));
     await expect(caller.preventives.update({ id: 8, data: { task: "Alteração indevida" } })).rejects.toMatchObject({ code: "FORBIDDEN" });
