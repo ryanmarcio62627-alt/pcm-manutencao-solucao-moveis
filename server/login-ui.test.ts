@@ -14,10 +14,10 @@ import { Textarea } from "../client/src/components/ui/textarea";
 import { buttonVariants } from "../client/src/components/ui/button";
 
 describe("legibilidade da tela de login", () => {
-  it("exibe o texto completo do acesso em laranja, inclusive desabilitado", () => {
+  it("exibe apenas Entrar em laranja, inclusive desabilitado", () => {
     const html = renderToStaticMarkup(React.createElement(Login, { onLoggedIn: vi.fn() }));
 
-    expect(html).toContain("Entrar ou fazer login");
+    expect(html).toContain(">Entrar</button>");
     expect(html).toContain("text-[#f47b20]");
     expect(html).toContain("disabled:text-[#f47b20]");
   });

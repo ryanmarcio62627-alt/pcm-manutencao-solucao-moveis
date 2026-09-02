@@ -117,16 +117,18 @@
 - [x] Corrigir contraste e legibilidade dos campos do registro de manutenção preventiva
 - [x] Validar login e registro preventivo em desktop e mobile
 - [x] Atualizar testes e publicar a correção visual
-- [ ] Validar no navegador, em desktop e mobile, o login e a aba Preventivas com o formulário Nova preventiva aberto
-- [ ] Salvar e publicar novo checkpoint após confirmar visualmente a correção do login e da legibilidade do registro preventivo
+- [x] Validar no navegador, em desktop e mobile, o login e a aba Preventivas com o formulário Nova preventiva aberto
+- [x] Salvar e publicar novo checkpoint após confirmar visualmente a correção do login e da legibilidade do registro preventivo
 - [x] Mapear botões com texto invisível ou baixo contraste em todas as telas
 - [x] Corrigir variantes compartilhadas de Button e usos com fundo customizado
 - [x] Garantir legibilidade em estados normal, hover, foco e desabilitado
-- [ ] Validar botões e formulários em desktop e mobile e publicar a correção
+- [x] Validar botões e formulários em desktop e mobile e publicar a correção
 - [x] Investigar por que o CSS final deixa botões como barras sem texto
 - [x] Corrigir a renderização estrutural de texto e cor do Button no login e no sistema
-- [ ] Validar visualmente botões internos, modais e login em desktop e mobile
-- [ ] Publicar somente após confirmar que os rótulos estão visíveis
-- [ ] Confirmar no domínio publicado, em desktop e mobile, os botões do login e das telas autenticadas após esta rodada
+- [x] Validar visualmente botões internos, modais e login em desktop e mobile
+- [x] Publicar somente após confirmar que os rótulos estão visíveis
+- [x] Confirmar no domínio publicado, em desktop e mobile, os botões do login e das telas autenticadas após esta rodada
 - [x] Inspecionar o CSS final gerado e confirmar a presença das classes de contraste
-- [ ] Salvar e publicar novo checkpoint somente depois de confirmar os rótulos visíveis no ambiente publicado
+- [x] Salvar e publicar novo checkpoint somente depois de confirmar os rótulos visíveis no ambiente publicado
+- [x] Alterar o botão da tela inicial para exibir apenas “Entrar”, mantendo o texto laranja
+- [x] Validar a alteração final e publicar o checkpoint de encerramento
